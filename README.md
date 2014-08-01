@@ -94,7 +94,7 @@ This is an Add-on for JIRA.
 #### Syntax
 
 ```
-| jirasoap [instance-name] MODE OPTIONS
+| jirasoap MODE [instance-name] OPTIONS
 ```
 
 The instance-name is the top-level property name of the JIRA server to
