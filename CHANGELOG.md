@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+## 3.0.0
+
+* Add ability to search from multiple jira instances in jirasoap
+* Replace config.ini with config.json which can specify multiple jiras, and a default
+
 ## 2.0.1
 
 * Add urlencode.quote_plus to arguments so that we don't barf on special characters
@@ -53,11 +58,11 @@ Change Log
 * Fix bug with outputResults()
 * Move hostname configuration to config.ini
 
-## 1.3 
+## 1.3
 
 * Add alternate streaming versions of both commands
 
-## 1.2 
+## 1.2
 
 * Add SOAP command
 

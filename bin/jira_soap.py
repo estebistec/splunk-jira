@@ -1,5 +1,5 @@
 """
-External search command for querying the JIRA SOAP API 
+External search command for querying the JIRA SOAP API
 
 Usage:
   | jirasoap search "text search" | ... <other splunk commands here> ... # text search
@@ -26,20 +26,27 @@ import time
 
 from suds.client import Client
 
+import json
+import os
+
+try:
+    jira_servers = json.load(open(os.path.join(os.path.dirname(__file__), 'config.json')))
+except Exception as e:
+    isp.generateErrorResults('Please configure your JIRA instance(s) in {}/config.json'.format(os.path.dirname(__file__)))
+
 try:
    messages = {}
    logging.getLogger('suds').setLevel(logging.INFO)
 
    logger = dcu.getLogger()
 
-   # Get configuration values from config.ini
-   local_conf = jiracommon.getLocalConf()
-
-   hostname = local_conf.get('jira', 'hostname')
-   username = local_conf.get('jira', 'username')
-   password = local_conf.get('jira', 'password')
-   protocol = local_conf.get('jira', 'soap_protocol');
-   port = local_conf.get('jira', 'soap_port');
+   jira_name = sys.argv[2] if len(sys.argv) > 3 else jira_servers['default']
+   jira = jira_servers[jira_name]
+   hostname = jira['hostname']
+   username = jira['username']
+   password = jira['password']
+   protocol = jira['soap_protocol']
+   port = jira['soap_port']
 
    url = "%s://%s:%s/rpc/soap/jirasoapservice-v2?wsdl" % (protocol, hostname, port)
    logger.info(url)
@@ -140,4 +147,4 @@ try:
 
 except Exception, e:
    logger.exception(str(e))
-   isp.generateErrorResults(str(e)) 
+   isp.generateErrorResults(str(e))

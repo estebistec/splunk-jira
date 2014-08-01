@@ -37,7 +37,7 @@ This is an Add-on for JIRA.
   ```
 
 * Run a JQL search and return the all Changes for all matching Issues.
-  
+
   ```
   | jirarest changelog JQL_QUERY
   ```
@@ -66,7 +66,7 @@ This is an Add-on for JIRA.
 
 #### Options
 
-* comments 
+* comments
   * Shows comments for all Issues returned by main option.
   * Compatible with issues, jqlquery, and batch commands.
 
@@ -87,15 +87,20 @@ This is an Add-on for JIRA.
 
 #### Notes
 
-* The rest command can also be called with | jira. 
+* The rest command can also be called with | jira.
 
 ### jirasoap (SOAP API - deprecated)
 
 #### Syntax
 
 ```
-| jirasoap MODE OPTIONS
+| jirasoap [instance-name] MODE OPTIONS
 ```
+
+The instance-name is the top-level property name of the JIRA server to
+search from your `config.json`. If not given, the `default` jira is used.
+
+You should document the available instances for your splunk users.
 
 #### MODES
 
