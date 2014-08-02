@@ -1,5 +1,3 @@
-import ConfigParser
-import os
 import splunk.bundle as sb
 import splunk.Intersplunk as isp
 
@@ -13,13 +11,6 @@ def getSplunkConf():
    stanza = conf.get('jira')
 
    return stanza
-
-def getLocalConf():
-   local_conf = ConfigParser.ConfigParser()
-   location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-   local_conf.read(location + '/config.ini')
-
-   return local_conf
 
 def flatten(item, keys):
    response = {}

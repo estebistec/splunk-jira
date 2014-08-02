@@ -26,13 +26,8 @@ import time
 
 from suds.client import Client
 
-import json
-import os
+from conf import get_jira_instance
 
-try:
-    jira_servers = json.load(open(os.path.join(os.path.dirname(__file__), 'config.json')))
-except Exception as e:
-    isp.generateErrorResults('Please configure your JIRA instance(s) in {}/config.json'.format(os.path.dirname(__file__)))
 
 try:
    messages = {}
@@ -40,8 +35,8 @@ try:
 
    logger = dcu.getLogger()
 
-   jira_name = sys.argv[2] if len(sys.argv) > 3 else jira_servers['default']
-   jira = jira_servers[jira_name]
+   jira_name = sys.argv[2] if len(sys.argv) > 3 else None
+   jira = get_jira_instance(jira_name)
    hostname = jira['hostname']
    username = jira['username']
    password = jira['password']

@@ -97,8 +97,7 @@ This is an Add-on for JIRA.
 | jirasoap MODE [instance-name] OPTIONS
 ```
 
-The instance-name is the top-level property name of the JIRA server to
-search from your `config.json`. If not given, the `default` jira is used.
+The instance-name is a stanza in the config.ini file.
 
 You should document the available instances for your splunk users.
 

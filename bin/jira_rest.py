@@ -11,29 +11,31 @@ import urllib
 
 import jiracommon
 
+from conf import get_jira_instance
+
 row={}
 results=[]
 keywords, options = splunk.Intersplunk.getKeywordsAndOptions()
 
-# Get configuration values from config.ini
-local_conf = jiracommon.getLocalConf()
+jira_name = sys.argv[1] if len(sys.argv) > 3 else None
+jira = get_jira_instance(jira_name)
 
 # Set up authentication variables
-username = local_conf.get('jira', 'username')
-password = local_conf.get('jira', 'password')
+username = jira['username']
+password = jira['password']
 auth = username + ':' + password
 authencode = base64.b64encode(auth)
 
 # Set up URL prefix
-hostname = local_conf.get('jira', 'hostname')
-protocol = local_conf.get('jira', 'jira_protocol')
-port = local_conf.get('jira', 'jira_port')
+hostname = jira['hostname']
+protocol = jira['jira_protocol']
+port = jira['jira_port']
 jiraserver = protocol + '://' + hostname + ':' + port
 
 pattern = '%Y-%m-%dT%H:%M:%S'
 datepattern = "(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})"
 datevalues = re.compile(datepattern)
-option = sys.argv[1]
+option = sys.argv[2]
 
 # filters
 if option == 'filters':
@@ -62,7 +64,7 @@ if option == 'filters':
 
 # rapidboards
 if option == 'rapidboards':
-   args = sys.argv[2]
+   args = sys.argv[-1]
    if args == "all":
       target = jiraserver + "/rest/greenhopper/1.0/rapidviews/list"
    elif args == "list":
@@ -151,7 +153,7 @@ if option == 'rapidboards':
 # changelog
 if option == 'changelog':
    target = jiraserver + "/rest/api/2/search?jql="
-   args=urllib.quote_plus(sys.argv[2]).split()
+   args=urllib.quote_plus(sys.argv[-1]).split()
    querystring = '+'.join(args)
    clfieldmv = []
    clfrommv = []
@@ -218,14 +220,14 @@ else:
 
 def main(changefield,comments,timestamp):
    global issuecount
-   try: 
+   try:
       row = {}
       results = []
       fieldlist = {}
       flist = []
       fields = ""
       try: issuecount
-      except: issuecount = 0  
+      except: issuecount = 0
       if issuecount >= 1000:
          offset = "&startAt=" + str(issuecount)
       else:
@@ -233,7 +235,7 @@ def main(changefield,comments,timestamp):
 
       # jqlsearch
       if option == 'jqlsearch':
-         args=urllib.quote_plus(sys.argv[2]).split()
+         args=urllib.quote_plus(sys.argv[-1]).split()
          if len(sys.argv) > 3 and "fields" in sys.argv[3:]:
             fields="&fields=key,id,created," + sys.argv[sys.argv.index('fields') + 1]
          target = jiraserver + "/rest/api/2/search?jql="
@@ -245,8 +247,8 @@ def main(changefield,comments,timestamp):
 
       # batch
       if option == 'batch':
-         args = urllib.quote_plus(sys.argv[2]).split()
-         batchargs = sys.argv[3]
+         args = urllib.quote_plus(sys.argv[-1]).split()
+         batchargs = sys.argv[-1]
          if len(sys.argv) > 4 and "fields" in sys.argv[4:]:
             fields = "&fields=key,id,created," + sys.argv[sys.argv.index('fields') + 1]
          batchargs = re.sub(',',' ',batchargs)
@@ -261,7 +263,7 @@ def main(changefield,comments,timestamp):
 
       # issues
       if option == 'issues':
-         args=sys.argv[2]
+         args=sys.argv[-1]
          if len(sys.argv) > 3 and "fields" in sys.argv[3:]:
             fields = "&fields=key,id,created," + sys.argv[sys.argv.index('fields') + 1]
          target = jiraserver + "/rest/api/2/search?jql=filter=" + args
@@ -317,7 +319,7 @@ def main(changefield,comments,timestamp):
                row={}
             splunk.Intersplunk.outputStreamResults(results)
             results=[]
-         exit() 
+         exit()
       for fielditem in fullfields:
          fieldlist[fielditem['id']] = fielditem['name']
          flist.append(fieldlist)
@@ -349,7 +351,7 @@ def main(changefield,comments,timestamp):
                      elif mvfield1=='progress' :
                         row[field+"_progress"]=issue['fields'][jirafield][mvfield1]
                   elif (isinstance(mvfield1, collections.Iterable)==True):
-                     for mvfield2 in mvfield1: 
+                     for mvfield2 in mvfield1:
                         if mvfield2=='key':
                            try:
                               row[field].append(mvfield1[mvfield2])
@@ -441,7 +443,7 @@ def main(changefield,comments,timestamp):
             else:
                epoch = 0
 
-         if changefield == True: 
+         if changefield == True:
             row['key'] = issue['key']
          else:
             row['Key'] = issue['key']
@@ -450,13 +452,13 @@ def main(changefield,comments,timestamp):
          row['host'] = hostname
          row['source'] = "jira_rest"
          row['sourcetype'] = "jira_issues"
-         results.append(row)     
+         results.append(row)
          row = {}
       splunk.Intersplunk.outputStreamResults(results)
       results = []
       issuecount = issuecount + len(full2['issues'])
       if int(len(full2['issues'])) >= 1000:
-         main(changefield, comments, timestamp)       
+         main(changefield, comments, timestamp)
       else:
          exit()
 

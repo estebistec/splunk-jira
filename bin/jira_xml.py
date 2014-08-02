@@ -22,6 +22,9 @@ import jiracommon
 import splunk.mining.dcutils as dcu
 import splunk.Intersplunk as isp
 
+from conf import get_jira_instance
+
+
 try:
    messages = {}
    logger = dcu.getLogger()
@@ -37,13 +40,13 @@ try:
    count = int(splunk_conf.get('tempMax', 1000))
 
    # Get configuration values from config.ini
-   local_conf = jiracommon.getLocalConf()
-
-   hostname = local_conf.get('jira', 'hostname')
-   username = local_conf.get('jira', 'username')
-   password = local_conf.get('jira', 'password')
-   protocol = local_conf.get('jira', 'jira_protocol')
-   port = local_conf.get('jira', 'jira_port')
+   jira_name = sys.argv[2] if len(sys.argv) > 3 else None
+   jira = get_jira_instance(jira_name)
+   hostname = jira['hostname']
+   username = jira['username']
+   password = jira['password']
+   protocol = jira['jira_protocol']
+   port = jira['jira_port']
 
    keywords, argvals = isp.getKeywordsAndOptions()
    logger.info('keywords: %s' % keywords)
@@ -97,7 +100,7 @@ try:
                   header.append('__mv_' + k)
             elif len(v) == 1:
                row[k] = v[0].text
-         
+
          for k in time_keys:
             # If time_keys is empty, then the split above results in ['']
             if k:
@@ -131,12 +134,12 @@ try:
             time_text = elem.findtext(time_option)
             if time_text != None:
                logger.info("time text: %s" % time_text)
-               time_value = re.sub(r' (\+|-)\d+$', '', elem.findtext(time_option)) 
+               time_value = re.sub(r' (\+|-)\d+$', '', elem.findtext(time_option))
                timestamp = time.mktime(datetime.datetime.strptime(time_value, "%a, %d %b %Y %H:%M:%S").timetuple())
                row['_time'] = timestamp
-            else: 
+            else:
                row['_time'] = 0
-         else: 
+         else:
             row['_time'] = 0
 
          row['host'] = hostname
@@ -152,7 +155,7 @@ try:
          break
 
    isp.outputResults(results, None, header)
- 
+
 except Exception, e:
    logger.exception(str(e))
    isp.generateErrorResults(str(e))
